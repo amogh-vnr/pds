@@ -25,11 +25,20 @@ app.add_middleware(
 DEVICE = torch.device('cpu')
 MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'model.pth')
 
+import gc
+torch.set_num_threads(1)
+
 # Load the model
 try:
     model = ResNet50_CBAM_Binary(n_classes=2)
-    model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
+    # Use mmap=True to avoid memory spikes, critical for 512MB RAM constraints
+    state_dict = torch.load(MODEL_PATH, map_location=DEVICE, mmap=True)
+    model.load_state_dict(state_dict)
     model.eval()
+    
+    # Free up memory explicitly
+    del state_dict
+    gc.collect()
 except Exception as e:
     print(f"Failed to load model from {MODEL_PATH}. Error: {e}")
     # In case of missing model.pth during build step, we don't crash
