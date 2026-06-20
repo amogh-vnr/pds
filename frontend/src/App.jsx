@@ -60,8 +60,9 @@ function App() {
     formData.append('file', file);
 
     try {
-      // In production, this should point to your hosted completely backend URL
-      const response = await fetch('http://localhost:8000/predict', {
+      // Use environment variable VITE_API_URL if defined, otherwise default to local backend
+      const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBaseUrl}/predict`, {
         method: 'POST',
         body: formData,
       });
